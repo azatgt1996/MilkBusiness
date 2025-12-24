@@ -205,7 +205,7 @@
           <div class="pure-control-group period-box">
             <label for="period">Период</label>
             <select id="period" v-model="period">
-              <option value="all">За все периоды</option>
+              <option value="all">Показать все</option>
               <option v-for="(it, index) in periods" :key="index" :value="it">{{ it }}</option>
             </select>
           </div>
@@ -364,7 +364,7 @@
         url: 'https://api.github.com/gists/a76d3bb997ac279cc6d96cc7de984d48',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: 'token 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',
+          Authorization: 'token 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',
         },
         file: 'milk_business.json',
         async getData() {
