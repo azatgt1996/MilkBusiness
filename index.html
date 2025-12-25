@@ -18,6 +18,15 @@
         margin: 10px auto;
         width: 94%;
       }
+      .fade-enter-active,
+      .fade-leave-active {
+        transition: opacity 0.2s;
+      }
+      .fade-enter-from,
+      .fade-leave-to {
+        opacity: 0;
+      }
+
       .auth-container {
         margin: auto;
         width: fit-content;
@@ -41,6 +50,24 @@
         display: flex;
         gap: 16px;
       }
+
+      .form-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        input,
+        select {
+          height: 28px;
+          margin: 0 !important;
+          padding: 0 0.6em;
+        }
+      }
+      h3 {
+        line-height: 28px;
+        padding-inline: 5px;
+      }
+
       .buttons-panel,
       .pure-controls {
         margin-top: 16px;
@@ -49,6 +76,7 @@
         flex-wrap: wrap;
       }
       .pure-table {
+        border-radius: 5px;
         display: block;
         overflow-x: auto;
 
@@ -65,7 +93,7 @@
       }
       .pure-form select {
         appearance: none;
-        width: 230px;
+        width: 240px;
         background-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjMDAwMDAwIj48cGF0aCBkPSJNMTIgMTUuNWw0LjUtNC41aC05eiIvPjwvc3ZnPg==);
         background-position: 100%;
         background-repeat: no-repeat;
@@ -88,231 +116,247 @@
   </head>
   <body>
     <div id="app">
-      <div v-if="currentPage === 'auth'" class="auth-container">
-        <h3>Авторизация</h3>
-        <form class="pure-form pure-form-stacked" @submit.prevent="enter">
-          <fieldset>
-            <div class="pure-control-group">
-              <label for="login">Логин</label>
-              <input v-model="auth.login" type="text" id="login" placeholder="Введите логин" required />
-            </div>
-            <div class="pure-control-group">
-              <label for="password">Пароль</label>
-              <input v-model="auth.password" type="password" id="password" placeholder="Введите пароль" required />
-            </div>
-            <div class="pure-controls">
-              <button type="submit" class="pure-button pure-button-primary">Войти</button>
-            </div>
-          </fieldset>
-        </form>
-      </div>
-
-      <div v-else-if="currentPage === 'sales'">
-        <h3>Список продаж ({{ currentUser }})</h3>
-        <table id="sales-table" class="pure-table pure-table-horizontal pure-table-striped">
-          <thead>
-            <th v-for="label in ['Дата', 'Кол-во', 'Цена', 'Стоимость']">{{ label }}</th>
-          </thead>
-          <tbody>
-            <tr v-for="it in sales">
-              <td>{{ new Date(it.date).toLocaleDateString() }}</td>
-              <td class="volume-td">
-                <div>{{ it.volume }} л</div>
-                <div>{{ it.proteins || it.fats ? `(${it.proteins || '-'} / ${it.fats || '-'})` : '' }}</div>
-              </td>
-              <td>{{ it.price }} ₽</td>
-              <td>{{ it.volume * it.price }} ₽</td>
-            </tr>
-          </tbody>
-        </table>
-        <div class="buttons-panel">
-          <button class="pure-button" @click="exit">Выйти</button>
-          <button class="pure-button" @click="gotoReport">Отчет</button>
-        </div>
-      </div>
-
-      <div v-else-if="currentPage === 'deals'">
-        <h3>Список сделок</h3>
-        <table id="deals-table" class="pure-table pure-table-horizontal pure-table-striped">
-          <thead>
-            <th v-for="label in ['ФИО', 'Дата', 'Кол-во', 'Цена', 'Стоимость']">{{ label }}</th>
-          </thead>
-          <tbody>
-            <tr v-for="(it, index) in store.deals" @click="openDeal(index)">
-              <td>{{ it.fio }}</td>
-              <td>{{ new Date(it.date).toLocaleDateString() }}</td>
-              <td class="volume-td">
-                <div>{{ it.volume }} л</div>
-                <div>{{ it.proteins || it.fats ? `(${it.proteins || '-'} / ${it.fats || '-'})` : '' }}</div>
-              </td>
-              <td>{{ it.price }} ₽</td>
-              <td>{{ it.volume * it.price }} ₽</td>
-            </tr>
-          </tbody>
-        </table>
-        <div class="buttons-panel">
-          <button class="pure-button" @click="exit">Выйти</button>
-          <button class="pure-button" @click="currentPage = 'clients'">Список клиентов</button>
-          <button class="pure-button" @click="gotoReport">Отчет</button>
-          <button class="pure-button pure-button-primary" @click="openDeal()">Добавить сделку</button>
-        </div>
-      </div>
-
-      <div v-else-if="currentPage === 'dealCard'">
-        <h3>{{ dealIndex === null ? 'Добавление сделки' : 'Изменение сделки' }}</h3>
-        <form class="pure-form pure-form-stacked" @submit.prevent="saveDeal">
-          <fieldset>
-            <div class="pure-control-group">
-              <label for="fio">ФИО</label>
-              <select v-model="deal.fio" id="fio" required>
-                <option value="" disabled selected>Выберите клиента</option>
-                <option v-for="it in store.clients" :key="it.login" :value="it.fio">{{ it.fio }}</option>
-              </select>
-            </div>
-            <div class="pure-control-group">
-              <label for="date">Дата</label>
-              <input v-model="deal.date" type="date" id="date" :max="new Date().toISOString().slice(0, 10)" required />
-            </div>
-            <div class="pure-control-group">
-              <label for="volume">Кол-во литров</label>
-              <input v-model="deal.volume" type="number" id="volume" min="0" required />
-            </div>
-            <div class="pure-control-group">
-              <label for="price">Цена</label>
-              <input v-model="deal.price" type="number" id="price" min="0" required />
-            </div>
-            <div class="milk-attributes-box">
-              <div class="pure-control-group">
-                <label for="proteins">Белки</label>
-                <input v-model="deal.proteins" type="number" id="proteins" min="0" step="0.1" />
-              </div>
-              <div class="pure-control-group">
-                <label for="fats">Жиры</label>
-                <input v-model="deal.fats" type="number" id="fats" min="0" step="0.1" />
-              </div>
-            </div>
-            <div class="pure-controls">
-              <button class="pure-button" @click="currentPage = 'deals'">Назад</button>
-              <button type="submit" class="pure-button pure-button-primary">Сохранить</button>
-            </div>
-          </fieldset>
-        </form>
-      </div>
-
-      <div v-else-if="currentPage === 'report'">
-        <h3>Отчет</h3>
-        <form v-if="currentUser === 'admin'" class="pure-form">
-          <div class="pure-control-group period-box">
-            <label for="period">Период</label>
-            <select id="period" v-model="period">
-              <option value="all">Показать все</option>
-              <option v-for="(it, index) in periods" :key="index" :value="it">{{ it }}</option>
-            </select>
+      <transition name="fade" mode="out-in">
+        <div :key="currentPage">
+          <div v-if="currentPage === 'auth'" class="auth-container">
+            <h3>Авторизация</h3>
+            <form class="pure-form pure-form-stacked" @submit.prevent="enter">
+              <fieldset>
+                <div class="pure-control-group">
+                  <label for="login">Логин</label>
+                  <input v-model="auth.login" type="text" id="login" placeholder="Введите логин" required />
+                </div>
+                <div class="pure-control-group">
+                  <label for="password">Пароль</label>
+                  <input v-model="auth.password" type="password" id="password" placeholder="Введите пароль" required />
+                </div>
+                <div class="pure-controls">
+                  <button type="submit" class="pure-button pure-button-primary">Войти</button>
+                </div>
+              </fieldset>
+            </form>
           </div>
-        </form>
-        <table v-if="period === 'all'" id="report-table-1" class="pure-table pure-table-horizontal pure-table-striped">
-          <thead>
-            <tr>
-              <th v-for="label in ['Период', 'Кол-во', 'Итого']">{{ label }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="it in reportData">
-              <td>{{ it.period }}</td>
-              <td>{{ it.volume }}</td>
-              <td>{{ it.sum }} ₽</td>
-            </tr>
-          </tbody>
-        </table>
-        <table v-else id="report-table-2" class="pure-table pure-table-horizontal pure-table-striped">
-          <thead>
-            <tr>
-              <th v-for="label in ['ФИО', 'Кол-во', 'Итого']">{{ label }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="it in reportData">
-              <td>{{ it.fio }}</td>
-              <td>{{ it.volume }}</td>
-              <td>{{ it.sum }} ₽</td>
-            </tr>
-          </tbody>
-        </table>
-        <div class="buttons-panel">
-          <button class="pure-button" @click="backFromReport">Назад</button>
-        </div>
-      </div>
 
-      <div v-else-if="currentPage === 'clients'">
-        <h3>Список клиентов</h3>
-        <table id="clients-table" class="pure-table pure-table-horizontal pure-table-striped">
-          <thead>
-            <tr>
-              <th v-for="label in ['Логин', 'ФИО', 'Адрес', 'Телефон']">{{ label }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="it in store.clients">
-              <td>{{ it.login }}</td>
-              <td>{{ it.fio }}</td>
-              <td>{{ it.address }}</td>
-              <td>{{ it.phone }}</td>
-            </tr>
-          </tbody>
-        </table>
-        <div class="buttons-panel">
-          <button class="pure-button" @click="currentPage = 'deals'">Назад</button>
-          <button class="pure-button pure-button-primary" @click="currentPage = 'newClient'">Добавить клиента</button>
-        </div>
-      </div>
+          <div v-else-if="currentPage === 'sales'">
+            <h3>Список продаж ({{ currentUser }})</h3>
+            <table id="sales-table" class="pure-table pure-table-horizontal pure-table-striped">
+              <thead>
+                <th v-for="label in ['Дата', 'Кол-во', 'Цена', 'Стоимость']">{{ label }}</th>
+              </thead>
+              <tbody>
+                <tr v-for="it in sales">
+                  <td>{{ new Date(it.date).toLocaleDateString() }}</td>
+                  <td class="volume-td">
+                    <div>{{ it.volume }} л</div>
+                    <div>{{ it.proteins || it.fats ? `(${it.proteins || '-'} / ${it.fats || '-'})` : '' }}</div>
+                  </td>
+                  <td>{{ it.price }} ₽</td>
+                  <td>{{ it.volume * it.price }} ₽</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="buttons-panel">
+              <button class="pure-button" @click="exit">Выйти</button>
+              <button class="pure-button" @click="gotoReport">Отчет</button>
+            </div>
+          </div>
 
-      <div v-else-if="currentPage === 'newClient'">
-        <h3>Добавление клиента</h3>
-        <form class="pure-form pure-form-stacked" @submit.prevent="saveClient">
-          <fieldset>
-            <div class="pure-control-group">
-              <label for="login">Логин</label>
-              <input
-                v-model="client.login"
-                type="text"
-                id="login"
-                pattern="[a-zA-Z]{4,8}"
-                placeholder="Введите логин"
-                required
-              />
-              <small>4-8 символов латиница</small>
+          <div v-else-if="currentPage === 'deals'">
+            <h3 class="pure-form form-header">
+              <span>Список сделок</span>
+              <input v-model="dateFilter" type="date" :max="new Date().toISOString().slice(0, 10)" />
+            </h3>
+            <table id="deals-table" class="pure-table pure-table-horizontal pure-table-striped">
+              <thead>
+                <th v-for="label in ['ФИО', 'Дата', 'Кол-во', 'Цена', 'Стоимость']">{{ label }}</th>
+              </thead>
+              <tbody>
+                <tr v-for="(it, index) in filteredDeals" @click="openDeal(index)">
+                  <td>{{ it.fio }}</td>
+                  <td>{{ new Date(it.date).toLocaleDateString() }}</td>
+                  <td class="volume-td">
+                    <div>{{ it.volume }} л</div>
+                    <div>{{ it.proteins || it.fats ? `(${it.proteins || '-'} / ${it.fats || '-'})` : '' }}</div>
+                  </td>
+                  <td>{{ it.price }} ₽</td>
+                  <td>{{ it.volume * it.price }} ₽</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="buttons-panel">
+              <button class="pure-button" @click="exit">Выйти</button>
+              <button class="pure-button" @click="currentPage = 'clients'">Список клиентов</button>
+              <button class="pure-button" @click="gotoReport">Отчет</button>
+              <button class="pure-button pure-button-primary" @click="openDeal()">Добавить сделку</button>
             </div>
-            <div class="pure-control-group">
-              <label for="password">Пароль</label>
-              <input
-                v-model="client.password"
-                type="password"
-                id="password"
-                pattern="[a-z0-9]{6,12}"
-                placeholder="Введите пароль"
-                required
-              />
-              <small>6-12 символов латиница\цифры</small>
+          </div>
+
+          <div v-else-if="currentPage === 'dealCard'">
+            <h3>{{ dealIndex === null ? 'Добавление сделки' : 'Изменение сделки' }}</h3>
+            <form class="pure-form pure-form-stacked" @submit.prevent="saveDeal">
+              <fieldset>
+                <div class="pure-control-group">
+                  <label for="fio">ФИО</label>
+                  <select v-model="deal.fio" id="fio" required>
+                    <option value="" disabled selected>Выберите клиента</option>
+                    <option v-for="it in store.clients" :key="it.login" :value="it.fio">{{ it.fio }}</option>
+                  </select>
+                </div>
+                <div class="pure-control-group">
+                  <label for="date">Дата</label>
+                  <input
+                    v-model="deal.date"
+                    type="date"
+                    id="date"
+                    :max="new Date().toISOString().slice(0, 10)"
+                    required
+                  />
+                </div>
+                <div class="pure-control-group">
+                  <label for="volume">Кол-во литров</label>
+                  <input v-model="deal.volume" type="number" id="volume" min="0" required />
+                </div>
+                <div class="pure-control-group">
+                  <label for="price">Цена, ₽</label>
+                  <input v-model="deal.price" type="number" id="price" min="0" required />
+                </div>
+                <div class="milk-attributes-box">
+                  <div class="pure-control-group">
+                    <label for="proteins">Белки</label>
+                    <input v-model="deal.proteins" type="number" id="proteins" min="0" step="0.1" />
+                  </div>
+                  <div class="pure-control-group">
+                    <label for="fats">Жиры</label>
+                    <input v-model="deal.fats" type="number" id="fats" min="0" step="0.1" />
+                  </div>
+                </div>
+                <div class="pure-controls">
+                  <button type="button" class="pure-button" @click="currentPage = 'deals'">Назад</button>
+                  <button type="submit" class="pure-button pure-button-primary">Сохранить</button>
+                </div>
+              </fieldset>
+            </form>
+          </div>
+
+          <div v-else-if="currentPage === 'report'">
+            <h3 class="pure-form form-header">
+              <span>Отчет</span>
+              <select v-if="currentUser === 'admin'" v-model="period">
+                <option value="all">Все периоды</option>
+                <option v-for="(it, index) in periods" :key="index" :value="it">{{ it }}</option>
+              </select>
+            </h3>
+            <table
+              v-if="period === 'all'"
+              id="report-table-1"
+              class="pure-table pure-table-horizontal pure-table-striped"
+            >
+              <thead>
+                <tr>
+                  <th v-for="label in ['Период', 'Кол-во', 'Итого']">{{ label }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="it in reportData">
+                  <td>{{ it.period }}</td>
+                  <td>{{ it.volume }}</td>
+                  <td>{{ it.sum }} ₽</td>
+                </tr>
+              </tbody>
+            </table>
+            <table v-else id="report-table-2" class="pure-table pure-table-horizontal pure-table-striped">
+              <thead>
+                <tr>
+                  <th v-for="label in ['ФИО', 'Кол-во', 'Итого']">{{ label }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="it in reportData">
+                  <td>{{ it.fio }}</td>
+                  <td>{{ it.volume }}</td>
+                  <td>{{ it.sum }} ₽</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="buttons-panel">
+              <button class="pure-button" @click="backFromReport">Назад</button>
             </div>
-            <div class="pure-control-group">
-              <label for="fio">ФИО</label>
-              <input v-model="client.fio" type="text" id="fio" placeholder="Введите ФИО" required />
+          </div>
+
+          <div v-else-if="currentPage === 'clients'">
+            <h3>Список клиентов</h3>
+            <table id="clients-table" class="pure-table pure-table-horizontal pure-table-striped">
+              <thead>
+                <tr>
+                  <th v-for="label in ['Логин', 'ФИО', 'Адрес', 'Телефон']">{{ label }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="it in store.clients">
+                  <td>{{ it.login }}</td>
+                  <td>{{ it.fio }}</td>
+                  <td>{{ it.address }}</td>
+                  <td>{{ it.phone }}</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="buttons-panel">
+              <button class="pure-button" @click="currentPage = 'deals'">Назад</button>
+              <button class="pure-button pure-button-primary" @click="currentPage = 'newClient'">
+                Добавить клиента
+              </button>
             </div>
-            <div class="pure-control-group">
-              <label for="address">Адрес</label>
-              <input v-model="client.address" type="text" id="address" placeholder="Введите адрес" />
-            </div>
-            <div class="pure-control-group">
-              <label for="phone">Телефон</label>
-              <input v-model="client.phone" type="tel" id="phone" pattern="[0-9]{11}" placeholder="89001112233" />
-            </div>
-            <div class="pure-controls">
-              <button class="pure-button" @click="currentPage = 'clients'">Назад</button>
-              <button type="submit" class="pure-button pure-button-primary">Сохранить</button>
-            </div>
-          </fieldset>
-        </form>
-      </div>
+          </div>
+
+          <div v-else-if="currentPage === 'newClient'">
+            <h3>Добавление клиента</h3>
+            <form class="pure-form pure-form-stacked" @submit.prevent="saveClient">
+              <fieldset>
+                <div class="pure-control-group">
+                  <label for="login">Логин</label>
+                  <input
+                    v-model="client.login"
+                    type="text"
+                    id="login"
+                    pattern="[a-zA-Z]{4,8}"
+                    placeholder="Введите логин"
+                    required
+                  />
+                  <small>4-8 символов латиница</small>
+                </div>
+                <div class="pure-control-group">
+                  <label for="password">Пароль</label>
+                  <input
+                    v-model="client.password"
+                    type="password"
+                    id="password"
+                    pattern="[a-z0-9]{6,12}"
+                    placeholder="Введите пароль"
+                    required
+                  />
+                  <small>6-12 символов латиница\цифры</small>
+                </div>
+                <div class="pure-control-group">
+                  <label for="fio">ФИО</label>
+                  <input v-model="client.fio" type="text" id="fio" placeholder="Введите ФИО" required />
+                </div>
+                <div class="pure-control-group">
+                  <label for="address">Адрес</label>
+                  <input v-model="client.address" type="text" id="address" placeholder="Введите адрес" />
+                </div>
+                <div class="pure-control-group">
+                  <label for="phone">Телефон</label>
+                  <input v-model="client.phone" type="tel" id="phone" pattern="[0-9]{11}" placeholder="89001112233" />
+                </div>
+                <div class="pure-controls">
+                  <button type="button" class="pure-button" @click="currentPage = 'clients'">Назад</button>
+                  <button type="submit" class="pure-button pure-button-primary">Сохранить</button>
+                </div>
+              </fieldset>
+            </form>
+          </div>
+        </div>
+      </transition>
     </div>
 
     <script>
@@ -364,7 +408,7 @@
         url: 'https://api.github.com/gists/a76d3bb997ac279cc6d96cc7de984d48',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: 'token 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',
+          Authorization: 'token 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',
         },
         file: 'milk_business.json',
         async getData() {
@@ -395,11 +439,11 @@
         document.head.appendChild(style)
       }
 
-      setWidth('#clients-table', [70, 140, 150, 140])
+      setWidth('#clients-table', [70, 140, 150, 92])
       setWidth('#deals-table', [140, 90, 60, 40, 90])
       setWidth('#sales-table', [110, 100, 100, 100])
       setWidth('#report-table-1', [120, 60, 80])
-      setWidth('#report-table-2', [170, 60, 80])
+      setWidth('#report-table-2', [140, 60, 80])
 
       createApp({
         setup() {
@@ -443,12 +487,6 @@
               }
               return result
             }
-
-            const [start, end] = period.value.split(' - ').map((it) => it.split('.').toReversed().join('-'))
-
-            const rows = arr.filter((it) => it.date >= start && it.date <= end)
-            const all = rows.reduce((sum, it) => sum + it.volume * it.price, 0)
-            return []
           })
 
           function gotoReport() {
@@ -516,7 +554,7 @@
             }
             const passwordHash = await fastHash(password)
             store.value.clients.push({ login, passwordHash, fio, address, phone })
-            saveStore()
+            await saveStore()
             notyf.success('Клиент добавлен')
             client.value = $clone(_client)
             currentPage.value = 'clients'
@@ -533,6 +571,12 @@
 
           const deal = ref($clone(_deal))
           const dealIndex = ref(null)
+          const dateFilter = ref(null)
+
+          const filteredDeals = computed(() => {
+            if (!dateFilter.value) return store.value.deals
+            return store.value.deals.filter((it) => it.date === dateFilter.value)
+          })
 
           function openDeal(index = null) {
             dealIndex.value = index
@@ -540,7 +584,7 @@
             currentPage.value = 'dealCard'
           }
 
-          function saveDeal() {
+          async function saveDeal() {
             const { fio, date, volume, price, proteins, fats } = deal.value
             const data = {
               fio,
@@ -556,8 +600,8 @@
               store.value.deals.push(data)
             }
 
-            saveStore()
-            notyf.success(dealIndex.value !== null ? 'Сделка изменена' : 'Сделака добавлена')
+            await saveStore()
+            notyf.success(dealIndex.value !== null ? 'Сделка изменена' : 'Сделка добавлена')
             currentPage.value = 'deals'
           }
 
@@ -578,6 +622,8 @@
             saveClient,
             deal,
             dealIndex,
+            dateFilter,
+            filteredDeals,
             saveDeal,
             openDeal,
           }
