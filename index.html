@@ -599,7 +599,6 @@
             } else {
               store.value.deals.push(data)
             }
-
             await saveStore()
             notyf.success(dealIndex.value !== null ? 'Сделка изменена' : 'Сделка добавлена')
             currentPage.value = 'deals'
