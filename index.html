@@ -145,7 +145,7 @@
               </thead>
               <tbody>
                 <tr v-for="it in sales">
-                  <td>{{ new Date(it.date).toLocaleDateString() }}</td>
+                  <td>{{ formatDate(it.date) }}</td>
                   <td class="volume-td">
                     <div>{{ it.volume }} л</div>
                     <div>{{ it.proteins || it.fats ? `(${it.proteins || '-'} / ${it.fats || '-'})` : '' }}</div>
@@ -164,7 +164,7 @@
           <div v-else-if="currentPage === 'deals'">
             <h3 class="pure-form form-header">
               <span>Список сделок</span>
-              <input v-model="dateFilter" type="date" :max="new Date().toISOString().slice(0, 10)" />
+              <input v-model="dateFilter" type="date" :max="today" />
             </h3>
             <table id="deals-table" class="pure-table pure-table-horizontal pure-table-striped">
               <thead>
@@ -173,7 +173,7 @@
               <tbody>
                 <tr v-for="(it, index) in filteredDeals" @click="openDeal(index)">
                   <td>{{ it.fio }}</td>
-                  <td>{{ new Date(it.date).toLocaleDateString() }}</td>
+                  <td>{{ formatDate(it.date) }}</td>
                   <td class="volume-td">
                     <div>{{ it.volume }} л</div>
                     <div>{{ it.proteins || it.fats ? `(${it.proteins || '-'} / ${it.fats || '-'})` : '' }}</div>
@@ -199,18 +199,12 @@
                   <label for="fio">ФИО</label>
                   <select v-model="deal.fio" id="fio" required>
                     <option value="" disabled selected>Выберите клиента</option>
-                    <option v-for="it in store.clients" :key="it.login" :value="it.fio">{{ it.fio }}</option>
+                    <option v-for="(fio, idx) in sortedClients" :key="idx" :value="fio">{{ fio }}</option>
                   </select>
                 </div>
                 <div class="pure-control-group">
                   <label for="date">Дата</label>
-                  <input
-                    v-model="deal.date"
-                    type="date"
-                    id="date"
-                    :max="new Date().toISOString().slice(0, 10)"
-                    required
-                  />
+                  <input v-model="deal.date" type="date" id="date" :max="today" required />
                 </div>
                 <div class="pure-control-group">
                   <label for="volume">Кол-во литров</label>
@@ -363,6 +357,10 @@
       const notyf = new Notyf({ position: { x: 'center', y: 'bottom' } })
       const { createApp, ref, watch, computed } = Vue
 
+      const today = new Date().toISOString().slice(0, 10)
+      const formatDate = (date) => new Date(date).toLocaleDateString()
+      const toIsoDate = (date) => new Date(date).toISOString().slice(0, 10)
+
       function getTwoWeekPeriods(startDate, endDate) {
         const start = new Date(startDate)
         const end = new Date(endDate)
@@ -380,7 +378,7 @@
             const nextMonth = new Date(year, month + 1, 0)
             periodEnd = new Date(year, month, nextMonth.getDate())
           }
-          periods.push(`${new Date(currentStart).toLocaleDateString()} - ${new Date(periodEnd).toLocaleDateString()}`)
+          periods.push(`${formatDate(currentStart)} - ${formatDate(periodEnd)}`)
           currentStart = currentStart.getDate() === 1 ? new Date(year, month, 16) : new Date(year, month + 1, 1)
         }
         return periods
@@ -467,14 +465,14 @@
 
             if (period.value === 'all') {
               return periods.value.map((period) => {
-                const [start, end] = period.split(' - ').map((it) => it.split('.').toReversed().join('-'))
+                const [start, end] = period.split(' - ').map((it) => toIsoDate(it))
                 const rows = arr.filter((it) => it.date >= start && it.date <= end)
                 const volume = rows.reduce((sum, it) => sum + it.volume, 0)
                 const sum = rows.reduce((sum, it) => sum + it.volume * it.price, 0)
                 return { period, volume, sum }
               })
             } else {
-              const [start, end] = period.value.split(' - ').map((it) => it.split('.').toReversed().join('-'))
+              const [start, end] = period.value.split(' - ').map((it) => toIsoDate(it))
               const rows = arr.filter((it) => it.date >= start && it.date <= end)
               const result = []
               for (const row of rows) {
@@ -488,6 +486,10 @@
               }
               return result
             }
+          })
+
+          const sortedClients = computed(() => {
+            return store.value.clients.map((it) => it.fio).toSorted()
           })
 
           function gotoReport() {
@@ -547,7 +549,7 @@
 
           async function saveClient() {
             const { login, password, fio, address, phone } = client.value
-            if (store.value.clients.find((it) => it.login === login)) {
+            if (login === 'admin' || store.value.clients.find((it) => it.login === login)) {
               return notyf.error('Клиент с таким логином уже есть')
             }
             if (store.value.clients.find((it) => it.fio === fio)) {
@@ -563,7 +565,7 @@
 
           const _deal = {
             fio: '',
-            date: new Date().toISOString().slice(0, 10),
+            date: today,
             volume: null,
             price: null,
             proteins: undefined,
@@ -624,8 +626,11 @@
             dealIndex,
             dateFilter,
             filteredDeals,
+            sortedClients,
+            today,
             saveDeal,
             openDeal,
+            formatDate,
           }
         },
       }).mount('#app')
