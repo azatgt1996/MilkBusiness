@@ -237,7 +237,7 @@
               <span>Отчет</span>
               <select v-if="currentUser === 'admin'" v-model="period">
                 <option value="all">Все периоды</option>
-                <option v-for="(it, index) in periods" :key="index" :value="it">{{ it }}</option>
+                <option v-for="(it, index) in periods" :key="index" :value="it.value">{{ it.label }}</option>
               </select>
             </h3>
             <table
@@ -358,8 +358,15 @@
       const { createApp, ref, watch, computed } = Vue
 
       const today = new Date().toISOString().slice(0, 10)
-      const formatDate = (date) => new Date(date).toLocaleDateString()
-      const toIsoDate = (date) => new Date(date).toISOString().slice(0, 10)
+      const formatDate = (date) => {
+        const options = { day: '2-digit', month: '2-digit', year: 'numeric' }
+        return new Date(date).toLocaleDateString(navigator.language, options)
+      }
+
+      const toIsoDate = (date) => {
+        const d = new Date(date)
+        return [d.getFullYear(), d.getMonth() + 1, d.getDate()].map((it) => it.toString().padStart(2, '0')).join('-')
+      }
 
       function getTwoWeekPeriods(startDate, endDate) {
         const start = new Date(startDate)
@@ -378,7 +385,10 @@
             const nextMonth = new Date(year, month + 1, 0)
             periodEnd = new Date(year, month, nextMonth.getDate())
           }
-          periods.push(`${formatDate(currentStart)} - ${formatDate(periodEnd)}`)
+          periods.push({
+            label: `${formatDate(currentStart)} - ${formatDate(periodEnd)}`,
+            value: [toIsoDate(currentStart), toIsoDate(periodEnd)],
+          })
           currentStart = currentStart.getDate() === 1 ? new Date(year, month, 16) : new Date(year, month + 1, 1)
         }
         return periods
@@ -465,14 +475,14 @@
 
             if (period.value === 'all') {
               return periods.value.map((period) => {
-                const [start, end] = period.split(' - ').map((it) => toIsoDate(it))
+                const [start, end] = period.value
                 const rows = arr.filter((it) => it.date >= start && it.date <= end)
                 const volume = rows.reduce((sum, it) => sum + it.volume, 0)
                 const sum = rows.reduce((sum, it) => sum + it.volume * it.price, 0)
-                return { period, volume, sum }
+                return { period: period.label, volume, sum }
               })
             } else {
-              const [start, end] = period.value.split(' - ').map((it) => toIsoDate(it))
+              const [start, end] = period.value
               const rows = arr.filter((it) => it.date >= start && it.date <= end)
               const result = []
               for (const row of rows) {
