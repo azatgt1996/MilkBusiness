@@ -91,12 +91,10 @@
           height: calc(100vh - 300px);
         }
       }
-      .pure-form select {
+      .pure-form select,
+      .pure-form input {
         appearance: none;
-        width: 240px;
-        background-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjMDAwMDAwIj48cGF0aCBkPSJNMTIgMTUuNWw0LjUtNC41aC05eiIvPjwvc3ZnPg==);
-        background-position: 100%;
-        background-repeat: no-repeat;
+        background: none;
       }
       .pure-button {
         border-radius: 5px;
@@ -355,7 +353,11 @@
 
     <script>
       const notyf = new Notyf({ position: { x: 'center', y: 'bottom' } })
-      const { createApp, ref, watch, computed } = Vue
+      const { createApp, ref, watch, computed, onMounted } = Vue
+
+      window.onerror = window.onunhandledrejection = (err) => {
+        notyf.error('Ошибка')
+      }
 
       const today = new Date().toISOString().slice(0, 10)
       const formatDate = (date) => {
@@ -421,13 +423,21 @@
         },
         file: 'milk_business.json',
         async getData() {
-          const res = await fetch(this.url, { method: 'GET', headers: this.headers })
-          const { files } = await res.json()
-          return JSON.parse(files[this.file].content)
+          try {
+            const res = await fetch(this.url, { method: 'GET', headers: this.headers })
+            const { files } = await res.json()
+            return JSON.parse(files[this.file].content)
+          } catch (error) {
+            notyf.error('Ошибка:', error)
+          }
         },
         async saveData(content) {
-          const body = { files: { [this.file]: { content: JSON.stringify(content) } } }
-          await fetch(this.url, { method: 'PATCH', headers: this.headers, body: JSON.stringify(body) })
+          try {
+            const body = { files: { [this.file]: { content: JSON.stringify(content) } } }
+            await fetch(this.url, { method: 'PATCH', headers: this.headers, body: JSON.stringify(body) })
+          } catch (error) {
+            notyf.error('Ошибка:', error)
+          }
         },
       }
 
@@ -511,15 +521,13 @@
             currentPage.value = currentUser.value === 'admin' ? 'deals' : 'sales'
           }
 
-          async function initStore() {
+          onMounted(async () => {
             store.value = await service.getData()
-          }
+          })
 
           async function saveStore() {
             await service.saveData(store.value)
           }
-
-          initStore()
 
           const auth = ref({ login: '', password: '' })
 
