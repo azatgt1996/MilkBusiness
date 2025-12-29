@@ -1,6 +1,7 @@
 #app {
   margin: 10px auto;
   width: 94%;
+  font-family: system-ui;
 }
 
 #app:has(.fade-enter-active),
@@ -112,6 +113,7 @@ h3 {
 .pure-button {
   border-radius: 5px;
   margin: 0 !important;
+  line-height: unset;
 }
 .pure-control-group {
   margin-bottom: 16px;
