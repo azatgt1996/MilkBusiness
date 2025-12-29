@@ -42,6 +42,7 @@ createApp({
   setup() {
     const currentPage = ref(ls.get('currentPage') ?? 'auth')
     const currentUser = ref(ls.get('currentUser') ?? '')
+    const loading = ref(true)
 
     watch(currentPage, (val) => ls.set('currentPage', currentPage.value))
 
@@ -97,10 +98,13 @@ createApp({
 
     onMounted(async () => {
       store.value = await service.getData()
+      loading.value = false
     })
 
     async function saveStore() {
+      loading.value = true
       await service.saveData(store.value)
+      loading.value = false
     }
 
     const auth = ref({ login: '', password: '' })
@@ -147,7 +151,7 @@ createApp({
       if (store.value.clients.find((it) => it.fio === fio)) {
         return notyf.error('Клиент с таким ФИО уже есть')
       }
-      const passwordHash = await fastHash(password)
+      const passwordHash = fastHash(password)
       store.value.clients.push({ login, passwordHash, fio, address, phone })
       await saveStore()
       notyf.success('Клиент добавлен')
@@ -203,6 +207,7 @@ createApp({
       currentPage,
       currentUser,
       store,
+      loading,
       auth,
       enter,
       exit,

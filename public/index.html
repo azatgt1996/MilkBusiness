@@ -4,115 +4,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Milk business</title>
-    <script src="vue.global.prod.js"></script>
-    <link rel="stylesheet" href="pure-min.css" />
-    <script src="notyf.min.js"></script>
-    <link rel="stylesheet" href="notyf.min.css" />
+    <script src="vendor/vue.global.prod.js"></script>
+    <link rel="stylesheet" href="vendor/pure-min.css" />
+    <script src="vendor/notyf.min.js"></script>
+    <link rel="stylesheet" href="vendor/notyf.min.css" />
     <script src="utils.js" defer></script>
     <script src="app.js" defer></script>
-    <style>
-      #app {
-        margin: 10px auto;
-        width: 94%;
-      }
-      .fade-enter-active,
-      .fade-leave-active {
-        transition: opacity 0.2s;
-      }
-      .fade-enter-from,
-      .fade-leave-to {
-        opacity: 0;
-      }
-
-      .auth-container {
-        margin: auto;
-        width: fit-content;
-      }
-      .milk-attributes-box {
-        display: flex;
-        gap: 10px;
-
-        input {
-          width: 100px;
-        }
-      }
-      .volume-td {
-        text-align: center;
-        div:nth-child(2) {
-          font-size: 12px;
-          color: gray;
-        }
-      }
-      .period-box {
-        display: flex;
-        gap: 16px;
-      }
-
-      .form-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-
-        input,
-        select {
-          height: 28px;
-          margin: 0 !important;
-          padding: 0 0.6em;
-        }
-      }
-      h3 {
-        line-height: 28px;
-        padding-inline: 5px;
-      }
-
-      .buttons-panel,
-      .pure-controls {
-        margin-top: 16px;
-        display: flex;
-        gap: 6px;
-        flex-wrap: wrap;
-      }
-      .pure-table {
-        border-radius: 5px;
-        display: block;
-        overflow-x: auto;
-
-        thead,
-        tbody {
-          display: block;
-          width: max-content;
-        }
-
-        tbody {
-          overflow-y: auto;
-          height: calc(100vh - 300px);
-        }
-      }
-      .pure-form select,
-      .pure-form input {
-        appearance: none;
-        background: none;
-      }
-      .pure-button {
-        border-radius: 5px;
-        margin: 0 !important;
-      }
-      .pure-control-group {
-        margin-bottom: 16px;
-
-        small {
-          display: block;
-          color: gray;
-          margin-top: -4px;
-          margin-left: 4px;
-        }
-      }
-    </style>
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <div id="app">
       <transition name="fade" mode="out-in">
-        <div :key="currentPage">
+        <div :class="{loading}" :key="currentPage">
+          <div class="loader"></div>
           <div v-if="currentPage === 'auth'" class="auth-container">
             <h3>Авторизация</h3>
             <form class="pure-form pure-form-stacked" @submit.prevent="enter">
@@ -248,7 +152,7 @@
               <tbody>
                 <tr v-for="it in reportData">
                   <td>{{ it.period }}</td>
-                  <td>{{ it.volume }}</td>
+                  <td>{{ it.volume }} л</td>
                   <td>{{ it.sum }} ₽</td>
                 </tr>
               </tbody>
@@ -262,7 +166,7 @@
               <tbody>
                 <tr v-for="it in reportData">
                   <td>{{ it.fio }}</td>
-                  <td>{{ it.volume }}</td>
+                  <td>{{ it.volume }} л</td>
                   <td>{{ it.sum }} ₽</td>
                 </tr>
               </tbody>
