@@ -41,15 +41,13 @@ function getMinMaxDates(arr) {
   return { min, max }
 }
 
-function fastHash(data) {
-  const str = JSON.stringify(data)
-  const seed = 0x811c9dc5
-  let hash = seed
-  for (let i = 0; i < str.length; i++) {
-    hash = Math.imul(hash ^ str.charCodeAt(i), 0x01000193)
-    hash >>>= 0
-  }
-  return (hash >>> 0).toString(36)
+async function hashSHA256(message) {
+  const encoder = new TextEncoder()
+  const data = encoder.encode(message)
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+  const hashArray = Array.from(new Uint8Array(hashBuffer))
+  const hashHex = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('')
+  return hashHex
 }
 
 function $clone(obj) {

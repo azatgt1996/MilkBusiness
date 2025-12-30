@@ -30,6 +30,7 @@
                   <label for="password">Пароль</label>
                   <input v-model="auth.password" type="password" id="password" placeholder="Введите пароль" required />
                 </div>
+                <a @click.prevent="showTel" href="">Забыли пароль?</a>
                 <div class="pure-controls">
                   <button type="submit" class="pure-button pure-button-primary">Войти</button>
                 </div>
@@ -60,7 +61,6 @@
               <button class="pure-button" @click="gotoReport">Отчет</button>
             </div>
           </div>
-
           <div v-else-if="currentPage === 'deals'">
             <h3 class="pure-form form-header">
               <span>Список сделок</span>
@@ -90,7 +90,6 @@
               <button class="pure-button pure-button-primary" @click="openDeal()">Добавить сделку</button>
             </div>
           </div>
-
           <div v-else-if="currentPage === 'dealCard'">
             <h3>{{ deal.id ? 'Изменение' : 'Добавление' }} сделки</h3>
             <form class="pure-form pure-form-stacked" @submit.prevent="saveDeal">
@@ -186,7 +185,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="it in sortedClients" :key="it.login">
+                <tr v-for="it in sortedClients" :key="it.login" @click="openClient(it.id)">
                   <td>{{ it.login }}</td>
                   <td>{{ it.fio }}</td>
                   <td>{{ it.address }}</td>
@@ -196,14 +195,11 @@
             </table>
             <div class="buttons-panel">
               <button class="pure-button" @click="currentPage = 'deals'">Назад</button>
-              <button class="pure-button pure-button-primary" @click="currentPage = 'newClient'">
-                Добавить клиента
-              </button>
+              <button class="pure-button pure-button-primary" @click="openClient()">Добавить клиента</button>
             </div>
           </div>
-
-          <div v-else-if="currentPage === 'newClient'">
-            <h3>Добавление клиента</h3>
+          <div v-else-if="currentPage === 'clientCard'">
+            <h3>{{ client.id ? 'Изменение' : 'Добавление' }} клиента</h3>
             <form class="pure-form pure-form-stacked" @submit.prevent="saveClient">
               <fieldset>
                 <div class="pure-control-group">
@@ -222,7 +218,7 @@
                   <label for="password">Пароль</label>
                   <input
                     v-model="client.password"
-                    type="password"
+                    type="text"
                     id="password"
                     pattern="[a-z0-9]{6,12}"
                     placeholder="Введите пароль"

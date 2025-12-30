@@ -1,8 +1,10 @@
+body {
+  user-select: none;
+}
 #app {
   margin: 10px auto;
   width: 94%;
   font-family: system-ui;
-  user-select: none;
 }
 
 #app:has(.fade-enter-active),
@@ -45,6 +47,12 @@
 .auth-container {
   margin: auto;
   width: fit-content;
+}
+.recall-info {
+  color: #555;
+  a {
+    text-decoration: none;
+  }
 }
 .milk-attributes-box {
   display: flex;
