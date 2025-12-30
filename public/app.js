@@ -105,6 +105,7 @@ createApp({
 
     // DEALS
     const _deal = {
+      id: null,
       fio: '',
       date: today,
       volume: null,
@@ -114,33 +115,33 @@ createApp({
     }
 
     const deal = ref($clone(_deal))
-    const dealIndex = ref(null)
     const dateFilter = ref(null)
+    const sortFn = (o1, o2) => o2.date.localeCompare(o1.date)
 
     const filteredDeals = computed(() => {
-      if (!dateFilter.value) return store.value.deals
+      if (!dateFilter.value) return store.value.deals.toSorted(sortFn)
       return store.value.deals.filter((it) => it.date === dateFilter.value)
     })
 
     const sales = computed(() => {
       if (currentUser.value === 'admin') return []
       const client = store.value.clients.find((it) => it.login === currentUser.value)
-      return store.value.deals.filter((it) => it.fio === client.fio)
+      return store.value.deals.filter((it) => it.fio === client.fio).toSorted(sortFn)
     })
 
     const sortedClients = computed(() => {
       return store.value.clients.map((it) => it.fio).toSorted()
     })
 
-    function openDeal(index = null) {
-      dealIndex.value = index
-      deal.value = $clone(index !== null ? store.value.deals[index] : _deal)
+    function openDeal(id = null) {
+      deal.value = $clone(id ? store.value.deals.find((it) => it.id === id) : _deal)
       currentPage.value = 'dealCard'
     }
 
     async function saveDeal() {
-      const { fio, date, volume, price, proteins, fats } = deal.value
+      const { id, fio, date, volume, price, proteins, fats } = deal.value
       const data = {
+        id: id || nanoid(5),
         fio,
         date,
         volume,
@@ -148,13 +149,14 @@ createApp({
         proteins: proteins || undefined,
         fats: fats || undefined,
       }
-      if (dealIndex.value !== null) {
-        store.value.deals[dealIndex.value] = data
+      if (id) {
+        const index = store.value.deals.findIndex((it) => it.id === id)
+        store.value.deals[index] = data
       } else {
         store.value.deals.push(data)
       }
       await saveStore()
-      notyf.success(dealIndex.value !== null ? 'Сделка изменена' : 'Сделка добавлена')
+      notyf.success(id ? 'Сделка изменена' : 'Сделка добавлена')
       currentPage.value = 'deals'
     }
 
@@ -221,7 +223,6 @@ createApp({
       client,
       saveClient,
       deal,
-      dealIndex,
       dateFilter,
       filteredDeals,
       sortedClients,

@@ -2,12 +2,13 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
     <title>Milk business</title>
     <script src="vendor/vue.global.prod.js"></script>
     <link rel="stylesheet" href="vendor/pure-min.css" />
     <script src="vendor/notyf.min.js"></script>
     <link rel="stylesheet" href="vendor/notyf.min.css" />
+    <script src="vendor/nanoid.js"></script>
     <script src="utils.js" defer></script>
     <script src="app.js" defer></script>
     <link rel="stylesheet" href="styles.css" />
@@ -70,7 +71,7 @@
                 <th v-for="label in ['ФИО', 'Дата', 'Кол-во', 'Цена', 'Стоимость']">{{ label }}</th>
               </thead>
               <tbody>
-                <tr v-for="(it, index) in filteredDeals" @click="openDeal(index)">
+                <tr v-for="(it, index) in filteredDeals" :key="index" @click="openDeal(it.id)">
                   <td>{{ it.fio }}</td>
                   <td>{{ formatDate(it.date) }}</td>
                   <td class="volume-td">
