@@ -92,7 +92,7 @@
           </div>
 
           <div v-else-if="currentPage === 'dealCard'">
-            <h3>{{ dealIndex === null ? 'Добавление сделки' : 'Изменение сделки' }}</h3>
+            <h3>{{ deal.id ? 'Изменение' : 'Добавление' }} сделки</h3>
             <form class="pure-form pure-form-stacked" @submit.prevent="saveDeal">
               <fieldset>
                 <div class="pure-control-group">
