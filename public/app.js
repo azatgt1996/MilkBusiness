@@ -63,9 +63,11 @@ createApp({
 
     async function enter() {
       const { login, password } = auth.value
-      const passwordHash = await fastHash(password)
+      const passwordHash = await hashSHA256(password)
       if (login === 'admin') {
-        if (passwordHash !== 'avcrry') return notyf.error('Неверный пароль')
+        if (passwordHash !== 'c9f85cea19943cf562972b68578c72899bdb4999baad0aa3ee1d729b8167fabf') {
+          return notyf.error('Неверный пароль')
+        }
         currentPage.value = 'deals'
       } else {
         const client = store.value.clients.find((it) => it.login === login)
@@ -83,37 +85,53 @@ createApp({
       auth.value = { login: '', password: '' }
     }
 
+    function showTel() {
+      const support = '+79001112233'
+      notyf.open({
+        type: 'info',
+        duration: 12000,
+        message: /* html */ `<div class="recall-info">Позвоните пожалуйста по номеру <a href="tel:${support}">${support}</a></div>`,
+      })
+    }
+
     // CLIENTS
-    const _client = { login: '', password: '', fio: '', address: '', phone: '' }
+    const _client = { id: null, login: '', password: '', fio: '', address: '', phone: '' }
     const client = ref($clone(_client))
     const sortedClients = computed(() => store.value.clients.toSorted(azSort('fio')))
 
+    function openClient(id = null) {
+      if (id) {
+        const openedClient = store.value.clients.find((it) => it.id === id)
+        client.value = $clone(openedClient)
+      } else {
+        client.value = $clone(_client)
+      }
+      currentPage.value = 'clientCard'
+    }
+
     async function saveClient() {
-      const { login, password, fio, address, phone } = client.value
-      if (login === 'admin' || store.value.clients.find((it) => it.login === login)) {
+      const { id, login, password, fio, address, phone } = client.value
+      if (login === 'admin' || store.value.clients.find((it) => it.login === login && it.id !== id)) {
         return notyf.error('Клиент с таким логином уже есть')
       }
-      if (store.value.clients.find((it) => it.fio === fio)) {
+      if (store.value.clients.find((it) => it.fio === fio && it.id !== id)) {
         return notyf.error('Клиент с таким ФИО уже есть')
       }
-      const passwordHash = fastHash(password)
-      store.value.clients.push({ login, passwordHash, fio, address, phone })
+      const passwordHash = await hashSHA256(password)
+      const data = { id: id || nanoid(5), fio, login, passwordHash, address, phone }
+      if (id) {
+        const index = store.value.clients.findIndex((it) => it.id === id)
+        store.value.clients[index] = data
+      } else {
+        store.value.clients.push(data)
+      }
       await saveStore()
-      notyf.success('Клиент добавлен')
-      client.value = $clone(_client)
+      notyf.success(id ? 'Клиент изменен' : 'Клиент добавлен')
       currentPage.value = 'clients'
     }
 
     // DEALS
-    const _deal = {
-      id: null,
-      fio: '',
-      date: today,
-      volume: null,
-      price: null,
-      proteins: undefined,
-      fats: undefined,
-    }
+    const _deal = { id: null, fio: '', date: today, volume: null, price: null, proteins: undefined, fats: undefined }
 
     const deal = ref($clone(_deal))
     const dateFilter = ref(null)
@@ -215,6 +233,7 @@ createApp({
       auth,
       enter,
       exit,
+      showTel,
       sales,
       period,
       periods,
@@ -222,6 +241,7 @@ createApp({
       gotoReport,
       backFromReport,
       client,
+      openClient,
       saveClient,
       deal,
       dateFilter,
