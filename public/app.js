@@ -86,6 +86,7 @@ createApp({
     // CLIENTS
     const _client = { login: '', password: '', fio: '', address: '', phone: '' }
     const client = ref($clone(_client))
+    const sortedClients = computed(() => store.value.clients.toSorted(azSort('fio')))
 
     async function saveClient() {
       const { login, password, fio, address, phone } = client.value
@@ -116,25 +117,25 @@ createApp({
 
     const deal = ref($clone(_deal))
     const dateFilter = ref(null)
-    const sortFn = (o1, o2) => o2.date.localeCompare(o1.date)
 
     const filteredDeals = computed(() => {
-      if (!dateFilter.value) return store.value.deals.toSorted(sortFn)
+      if (!dateFilter.value) return store.value.deals.toSorted(zaSort('date'))
       return store.value.deals.filter((it) => it.date === dateFilter.value)
     })
 
     const sales = computed(() => {
       if (currentUser.value === 'admin') return []
       const client = store.value.clients.find((it) => it.login === currentUser.value)
-      return store.value.deals.filter((it) => it.fio === client.fio).toSorted(sortFn)
-    })
-
-    const sortedClients = computed(() => {
-      return store.value.clients.map((it) => it.fio).toSorted()
+      return store.value.deals.filter((it) => it.fio === client.fio).toSorted(zaSort('date'))
     })
 
     function openDeal(id = null) {
-      deal.value = $clone(id ? store.value.deals.find((it) => it.id === id) : _deal)
+      if (id) {
+        const openedDeal = store.value.deals.find((it) => it.id === id)
+        deal.value = $clone(openedDeal)
+      } else {
+        deal.value = $clone(_deal)
+      }
       currentPage.value = 'dealCard'
     }
 
@@ -193,7 +194,7 @@ createApp({
             result.push({ fio: row.fio, volume: row.volume, sum: row.volume * row.price })
           }
         }
-        return result
+        return result.toSorted(azSort('fio'))
       }
     })
 

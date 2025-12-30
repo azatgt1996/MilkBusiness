@@ -99,7 +99,7 @@
                   <label for="fio">ФИО</label>
                   <select v-model="deal.fio" id="fio" required>
                     <option value="" disabled selected>Выберите клиента</option>
-                    <option v-for="(fio, idx) in sortedClients" :key="idx" :value="fio">{{ fio }}</option>
+                    <option v-for="(it, idx) in sortedClients" :key="idx" :value="it.fio">{{ it.fio }}</option>
                   </select>
                 </div>
                 <div class="pure-control-group">
@@ -186,7 +186,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="it in store.clients">
+                <tr v-for="it in sortedClients" :key="it.login">
                   <td>{{ it.login }}</td>
                   <td>{{ it.fio }}</td>
                   <td>{{ it.address }}</td>

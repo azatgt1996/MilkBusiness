@@ -66,6 +66,9 @@ function setWidth(table, widths) {
   document.head.appendChild(style)
 }
 
+const azSort = (field) => (o1, o2) => o1[field].localeCompare(o2[field])
+const zaSort = (field) => (o1, o2) => o2[field].localeCompare(o1[field])
+
 const ls = {
   get: (key) => localStorage.getItem(key),
   set: (key, value) => localStorage.setItem(key, value),
