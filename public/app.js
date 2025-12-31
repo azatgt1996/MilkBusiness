@@ -34,8 +34,8 @@ const service = {
 
 setWidth('#clients-table', [70, 140, 150, 92])
 setWidth('#deals-table', [140, 90, 60, 40, 90])
-setWidth('#sales-table', [110, 100, 100, 100])
-setWidth('#report-table-1', [120, 60, 80])
+setWidth('#sales-table', [90, 60, 40, 90])
+setWidth('#report-table-1', [140, 60, 80])
 setWidth('#report-table-2', [140, 60, 80])
 
 createApp({
