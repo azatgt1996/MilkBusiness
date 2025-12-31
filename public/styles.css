@@ -54,12 +54,13 @@ body {
     text-decoration: none;
   }
 }
-.milk-attributes-box {
+.inline-controls {
   display: flex;
   gap: 10px;
+  margin-bottom: 16px;
 
-  input {
-    width: 100px;
+  .pure-control-group {
+    margin-bottom: 0;
   }
 }
 .volume-td {

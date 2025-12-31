@@ -87,15 +87,12 @@ createApp({
 
     function showTel() {
       const support = '+79001112233'
-      notyf.open({
-        type: 'info',
-        duration: 12000,
-        message: /* html */ `<div class="recall-info">Позвоните пожалуйста по номеру <a href="tel:${support}">${support}</a></div>`,
-      })
+      const message = /*html*/ `<div class="recall-info">Позвоните пожалуйста по номеру <a href="tel:${support}">${support}</a></div>`
+      notyf.open({ message })
     }
 
     // CLIENTS
-    const _client = { id: null, login: '', password: '', fio: '', address: '', phone: '' }
+    const _client = { id: null, login: '', password: '', fio: '', address: '', phone: '', comment: '' }
     const client = ref($clone(_client))
     const sortedClients = computed(() => store.value.clients.toSorted(azSort('fio')))
 
@@ -110,15 +107,16 @@ createApp({
     }
 
     async function saveClient() {
-      const { id, login, password, fio, address, phone } = client.value
+      const { id, login, password, passwordHash, fio, address, phone, comment } = client.value
       if (login === 'admin' || store.value.clients.find((it) => it.login === login && it.id !== id)) {
         return notyf.error('Клиент с таким логином уже есть')
       }
       if (store.value.clients.find((it) => it.fio === fio && it.id !== id)) {
         return notyf.error('Клиент с таким ФИО уже есть')
       }
-      const passwordHash = await hashSHA256(password)
-      const data = { id: id || nanoid(5), fio, login, passwordHash, address, phone }
+      const hash = await hashSHA256(password)
+      const data = { id: id || nanoid(5), fio, login, address, phone, comment }
+      data.passwordHash = id && !password ? passwordHash : hash
       if (id) {
         const index = store.value.clients.findIndex((it) => it.id === id)
         store.value.clients[index] = data
@@ -226,31 +224,36 @@ createApp({
     }
 
     return {
-      currentPage,
-      currentUser,
+      today,
+      formatDate,
+
       store,
+      currentPage,
       loading,
+
       auth,
+      currentUser,
       enter,
       exit,
       showTel,
+
+      client,
+      sortedClients,
+      openClient,
+      saveClient,
+
+      deal,
+      dateFilter,
+      filteredDeals,
       sales,
+      openDeal,
+      saveDeal,
+
       period,
       periods,
       reportData,
       gotoReport,
       backFromReport,
-      client,
-      openClient,
-      saveClient,
-      deal,
-      dateFilter,
-      filteredDeals,
-      sortedClients,
-      today,
-      saveDeal,
-      openDeal,
-      formatDate,
     }
   },
 }).mount('#app')

@@ -113,14 +113,21 @@
                   <label for="price">Цена, ₽</label>
                   <input v-model="deal.price" type="number" id="price" min="0" required />
                 </div>
-                <div class="milk-attributes-box">
+                <div class="inline-controls">
                   <div class="pure-control-group">
                     <label for="proteins">Белки</label>
-                    <input v-model="deal.proteins" type="number" id="proteins" min="0" step="0.1" />
+                    <input
+                      v-model="deal.proteins"
+                      type="number"
+                      id="proteins"
+                      min="0"
+                      step="0.1"
+                      style="width: 100px"
+                    />
                   </div>
                   <div class="pure-control-group">
                     <label for="fats">Жиры</label>
-                    <input v-model="deal.fats" type="number" id="fats" min="0" step="0.1" />
+                    <input v-model="deal.fats" type="number" id="fats" min="0" step="0.1" style="width: 100px" />
                   </div>
                 </div>
                 <div class="pure-controls">
@@ -203,6 +210,17 @@
             <form class="pure-form pure-form-stacked" @submit.prevent="saveClient">
               <fieldset>
                 <div class="pure-control-group">
+                  <label for="fio">ФИО</label>
+                  <input
+                    v-model="client.fio"
+                    type="text"
+                    id="fio"
+                    placeholder="Введите ФИО"
+                    required
+                    :readonly="client.id"
+                  />
+                </div>
+                <div class="pure-control-group">
                   <label for="login">Логин</label>
                   <input
                     v-model="client.login"
@@ -210,6 +228,7 @@
                     id="login"
                     pattern="[a-zA-Z]{4,8}"
                     placeholder="Введите логин"
+                    :readonly="client.id"
                     required
                   />
                   <small>4-8 символов латиница</small>
@@ -222,13 +241,9 @@
                     id="password"
                     pattern="[a-z0-9]{6,12}"
                     placeholder="Введите пароль"
-                    required
+                    :required="!client.id"
                   />
                   <small>6-12 символов латиница\цифры</small>
-                </div>
-                <div class="pure-control-group">
-                  <label for="fio">ФИО</label>
-                  <input v-model="client.fio" type="text" id="fio" placeholder="Введите ФИО" required />
                 </div>
                 <div class="pure-control-group">
                   <label for="address">Адрес</label>
@@ -237,6 +252,10 @@
                 <div class="pure-control-group">
                   <label for="phone">Телефон</label>
                   <input v-model="client.phone" type="tel" id="phone" pattern="[0-9]{11}" placeholder="89001112233" />
+                </div>
+                <div class="pure-control-group">
+                  <label for="comment">Примечание</label>
+                  <textarea v-model="client.comment" id="comment" placeholder="Введите примечание"></textarea>
                 </div>
                 <div class="pure-controls">
                   <button type="button" class="pure-button" @click="currentPage = 'clients'">Назад</button>
