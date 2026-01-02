@@ -31,7 +31,7 @@ function getTwoWeekPeriods(startDate, endDate) {
     })
     currentStart = currentStart.getDate() === 1 ? new Date(year, month, 16) : new Date(year, month + 1, 1)
   }
-  return periods
+  return periods.toReversed()
 }
 
 function getMinMaxDates(arr) {
