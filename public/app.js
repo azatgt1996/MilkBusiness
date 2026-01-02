@@ -1,16 +1,13 @@
-const notyf = new Notyf({ position: { x: 'center', y: 'bottom' } })
 const { createApp, ref, watch, computed, onMounted } = Vue
 
-window.onerror = window.onunhandledrejection = (err) => {
-  notyf.error('Ошибка')
-}
+const notyf = new Notyf({ position: { x: 'center', y: 'bottom' } })
+window.onerror = window.onunhandledrejection = () => notyf.error('Ошибка')
 
-const _token = 'Z2hwX2FsYVlYU2dRQ3F1MmVvan' + 'ZLWWlBblBhdlVsT2pPUjNqN3ZhRQ=='
 const service = {
   url: 'https://api.github.com/gists/a76d3bb997ac279cc6d96cc7de984d48',
   headers: {
     'Content-Type': 'application/json',
-    Authorization: `token ${atob(_token)}`,
+    Authorization: `token ${atob('Z2hwX2FsYVlYU2dRQ3F1MmVvan' + 'ZLWWlBblBhdlVsT2pPUjNqN3ZhRQ==')}`,
   },
   file: 'milk_business.json',
   async getData() {
@@ -32,11 +29,13 @@ const service = {
   },
 }
 
-setWidth('#clients-table', [70, 140, 150, 92])
-setWidth('#deals-table', [140, 90, 60, 40, 90])
-setWidth('#sales-table', [90, 60, 40, 90])
-setWidth('#report-table-1', [140, 60, 80])
-setWidth('#report-table-2', [140, 60, 80])
+setTablesWidth({
+  '#clients-table': [70, 140, 150, 92],
+  '#deals-table': [140, 90, 60, 40, 90],
+  '#sales-table': [90, 60, 40, 90],
+  '#report-table-1': [140, 60, 80],
+  '#report-table-2': [140, 60, 80],
+})
 
 createApp({
   setup() {
@@ -133,6 +132,7 @@ createApp({
 
     const deal = ref($clone(_deal))
     const dateFilter = ref(null)
+    const getProteinsFatsInfo = (it) => (it.proteins || it.fats ? `(${it.proteins || '-'} / ${it.fats || '-'})` : '')
 
     const filteredDeals = computed(() => {
       if (!dateFilter.value) return store.value.deals.toSorted(zaSort('date'))
@@ -246,6 +246,7 @@ createApp({
       dateFilter,
       filteredDeals,
       sales,
+      getProteinsFatsInfo,
       openDeal,
       saveDeal,
 

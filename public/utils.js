@@ -54,14 +54,19 @@ function $clone(obj) {
   return JSON.parse(JSON.stringify(obj))
 }
 
-function setWidth(table, widths) {
-  const style = document.createElement('style')
-  widths.forEach((width, i) => {
-    const w = `${width}px`
-    style.textContent += `${table} td:nth-child(${i + 1}), ${table} th:nth-child(${i + 1})
+function setTablesWidth(map) {
+  function setWidth(table, widths) {
+    const style = document.createElement('style')
+    widths.forEach((width, i) => {
+      const w = `${width}px`
+      style.textContent += `${table} td:nth-child(${i + 1}), ${table} th:nth-child(${i + 1})
             { min-width: ${w}; max-width: ${w}; }`
-  })
-  document.head.appendChild(style)
+    })
+    document.head.appendChild(style)
+  }
+  for (const tableId in map) {
+    setWidth(tableId, map[tableId])
+  }
 }
 
 const azSort = (field) => (o1, o2) => o1[field].localeCompare(o2[field])

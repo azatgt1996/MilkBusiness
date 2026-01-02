@@ -14,10 +14,11 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div id="app">
+    <div id="app" v-cloak>
       <transition name="fade" mode="out-in">
         <div :class="{loading}" :key="currentPage">
           <div class="loader"></div>
+
           <div v-if="currentPage === 'auth'" class="auth-container">
             <h3>Авторизация</h3>
             <form class="pure-form pure-form-stacked" @submit.prevent="enter">
@@ -49,7 +50,7 @@
                   <td>{{ formatDate(it.date) }}</td>
                   <td class="volume-td">
                     <div>{{ it.volume }} л</div>
-                    <div>{{ it.proteins || it.fats ? `(${it.proteins || '-'} / ${it.fats || '-'})` : '' }}</div>
+                    <div>{{ getProteinsFatsInfo(it) }}</div>
                   </td>
                   <td>{{ it.price }} ₽</td>
                   <td>{{ it.volume * it.price }} ₽</td>
@@ -61,6 +62,7 @@
               <button class="pure-button" @click="gotoReport">Отчет</button>
             </div>
           </div>
+
           <div v-else-if="currentPage === 'deals'">
             <h3 class="pure-form form-header">
               <span>Список сделок</span>
@@ -76,7 +78,7 @@
                   <td>{{ formatDate(it.date) }}</td>
                   <td class="volume-td">
                     <div>{{ it.volume }} л</div>
-                    <div>{{ it.proteins || it.fats ? `(${it.proteins || '-'} / ${it.fats || '-'})` : '' }}</div>
+                    <div>{{ getProteinsFatsInfo(it) }}</div>
                   </td>
                   <td>{{ it.price }} ₽</td>
                   <td>{{ it.volume * it.price }} ₽</td>
@@ -90,6 +92,7 @@
               <button class="pure-button pure-button-primary" @click="openDeal()">Добавить сделку</button>
             </div>
           </div>
+
           <div v-else-if="currentPage === 'dealCard'">
             <h3>{{ deal.id ? 'Изменение' : 'Добавление' }} сделки</h3>
             <form class="pure-form pure-form-stacked" @submit.prevent="saveDeal">
@@ -205,6 +208,7 @@
               <button class="pure-button pure-button-primary" @click="openClient()">Добавить клиента</button>
             </div>
           </div>
+
           <div v-else-if="currentPage === 'clientCard'">
             <h3>{{ client.id ? 'Изменение' : 'Добавление' }} клиента</h3>
             <form class="pure-form pure-form-stacked" @submit.prevent="saveClient">

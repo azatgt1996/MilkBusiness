@@ -1,6 +1,9 @@
 body {
   user-select: none;
 }
+[v-cloak] {
+  display: none;
+}
 #app {
   margin: 10px auto;
   width: 94%;
@@ -21,20 +24,23 @@ body {
 }
 .loading {
   pointer-events: none;
+
+  .loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+
+    &::before {
+      content: '';
+      position: absolute;
+      height: 5px;
+      background: #3498db;
+      animation: load 2s infinite;
+    }
+  }
 }
-.loading .loader {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-}
-.loading .loader::before {
-  content: '';
-  position: absolute;
-  height: 5px;
-  background: #3498db;
-  animation: load 2s infinite;
-}
+
 @keyframes load {
   0% {
     width: 0%;
